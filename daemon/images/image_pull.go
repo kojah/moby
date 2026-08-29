@@ -72,13 +72,6 @@ func (i *ImageService) pullImageWithReference(ctx context.Context, ref reference
 
 	writesDone := make(chan struct{})
 
-	ctx, cancelFunc := context.WithCancel(ctx)
-
-	go func() {
-		progressutils.WriteDistributionProgress(cancelFunc, outStream, progressChan)
-		close(writesDone)
-	}()
-
 	ctx = namespaces.WithNamespace(ctx, i.contentNamespace)
 	// Take out a temporary lease for everything that gets persisted to the content store.
 	// Before the lease is cancelled, any content we want to keep should have it's own lease applied.
@@ -87,6 +80,12 @@ func (i *ImageService) pullImageWithReference(ctx context.Context, ref reference
 		return err
 	}
 	defer done(ctx)
+
+	ctx, cancelFunc := context.WithCancel(ctx)
+	go func() {
+		progressutils.WriteDistributionProgress(cancelFunc, outStream, progressChan)
+		close(writesDone)
+	}()
 
 	cs := &contentStoreForPull{
 		ContentStore: i.content,
