@@ -96,7 +96,10 @@ func (s *DockerCLIAttachSuite) TestAttachAfterDetach(c *testing.T) {
 
 	err = cmd.Start()
 	assert.NilError(c, err)
-	defer cmd.Process.Kill()
+	defer func() {
+		_ = cmd.Process.Kill()
+		_ = cmd.Wait()
+	}()
 
 	bytes := make([]byte, 10)
 	var nBytes int
