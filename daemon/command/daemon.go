@@ -223,6 +223,7 @@ func (cli *daemonCLI) start(ctx context.Context) (retErr error) {
 		ReadHeaderTimeout: 5 * time.Minute, // "G112: Potential Slowloris Attack (gosec)"; not a real concern for our use, so setting a long timeout.
 	}
 	apiShutdownCtx, apiShutdownCancel := context.WithCancel(context.WithoutCancel(ctx))
+	defer apiShutdownCancel()
 	apiShutdownDone := make(chan struct{})
 	trap.Trap(cli.stop)
 	go func() {
